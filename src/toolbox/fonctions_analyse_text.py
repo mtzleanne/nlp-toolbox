@@ -112,7 +112,7 @@ def compute_tf_idf_matrix(df: pd.DataFrame, col: str):
 # ---------------------------------------------------------------------------------------------------------------------------------------------
 def compute_top_n_tf_idf_by_doc(tf_idf_matrix: pd.DataFrame, n: int):
     """
-    Calcule le top 5 des plus grand tf-idf par documents à partir de la matrice TF-DIF mots x documents
+    Calcule le top n des plus grands tf-idf par documents (1 doc / col) à partir de la matrice TF-IDF mots x documents
 
     @param tf_idf_matrix : Pandas Dataframe de la matrice TF-DIF mots x documents
     @param n : int pour le nombre de termes qu'on souhaite conserver
