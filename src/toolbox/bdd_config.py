@@ -1,4 +1,4 @@
-### A COMPLETER EN FONCTION DE LA BASE DE DONNEES ANALYSEE
+### Mettre à jour en fonction de la base de données
 
 dict_expressions = {
 

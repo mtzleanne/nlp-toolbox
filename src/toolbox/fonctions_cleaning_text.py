@@ -11,9 +11,11 @@ import pickle
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
-from autocorrect import Speller
+# from autocorrect import Speller
+from spellchecker import SpellChecker
 
-spell = Speller(lang="fr")
+spell = SpellChecker(language="fr", case_sensitive=True)
+
 from unidecode import unidecode
 import gensim
 from gensim import corpora
@@ -50,6 +52,9 @@ newStopWords = [
     "sous",
     "sou",
     "aller",
+    "ceci", 
+    "cela",
+    "ça",
 ]
 stopwords += newStopWords
 stopwords = set(stopwords)
@@ -78,6 +83,26 @@ pattern_ponctuation = re.compile("|".join(re.escape(p) for p in ponctuation))
 pattern_ponctuation_all = re.compile(
     "^(" + "|".join(re.escape(p) for p in ponctuation) + ")+$"
 )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------
+### Définition d'une fonction corrige les fautes dans une réponse à l'aide du package SpellChecker
+# ---------------------------------------------------------------------------------------------------------------------------------------------
+def corriger_fautes(doc):
+    """
+    Cette fonction a pour but de corriger un document str
+
+    @param reponse: str
+    @return : str corrigé
+    """
+    words = doc.split()
+    corrected_words = []
+
+    corrected_words = corrected_words + [spell.correction(word) 
+                                         if ((word in spell.unknown([word])) and (spell.correction(word) != None)) 
+                                         else word for word in words]
+    print(corrected_words)
+
+    return ' '.join(corrected_words)
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -124,11 +149,12 @@ def preprocess_reponses_notices(doc: str):
 
     # 1 - Cleaning des fautes d'orthographe sur l'ensemble d'une colonne avec autocorrect
     # On flage les acronymes que l'ont ne veut pas corriger
-    for acronyme in bdd_config.list_acronymes_a_conserver:
-        if acronyme in doc:
-            output_doc = output_doc.replace(acronyme, f"flagconserve{acronyme}")
+    if bdd_config.list_acronymes_a_conserver != {} :
+        for acronyme in bdd_config.list_acronymes_a_conserver:
+            if acronyme in doc:
+                output_doc = output_doc.replace(acronyme, f"flagconserve{acronyme}")
     # On lance la fonction de correction
-    output_doc = spell(output_doc)
+    output_doc = corriger_fautes(output_doc)
     # On retirer le flag
     output_doc = output_doc.replace("flagconserve", "")
 
@@ -154,21 +180,21 @@ def preprocess_reponses_notices(doc: str):
     return output_tokens
 
 
-# ---------------------------------------------------------------------------------------------------------------------------------------------
-### Définition d'une fonction corrige les fautes dans une réponse à l'aide du package Spell
-# ---------------------------------------------------------------------------------------------------------------------------------------------
-def corriger_fautes(reponse):
-    """
-    Cette fonction a pour but de corriger une réponse str
+# # ---------------------------------------------------------------------------------------------------------------------------------------------
+# ### Définition d'une fonction corrige les fautes dans une réponse à l'aide du package Spell
+# # ---------------------------------------------------------------------------------------------------------------------------------------------
+# def corriger_fautes(reponse):
+#     """
+#     Cette fonction a pour but de corriger une réponse str
 
-    @param reponse: str
-    @return reponse_corrigee : str corrigé
-    """
-    if isinstance(reponse, str):
-        reponse_corrigee = spell(reponse)
-    else:  # Cas de valuer manquante
-        reponse_corrigee = np.nan
-    return reponse_corrigee
+#     @param reponse: str
+#     @return reponse_corrigee : str corrigé
+#     """
+#     if isinstance(reponse, str):
+#         reponse_corrigee = spell(reponse)
+#     else:  # Cas de valuer manquante
+#         reponse_corrigee = np.nan
+#     return reponse_corrigee
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------
